@@ -1,6 +1,8 @@
 import os
 import sys
+print(sys.path)
 import random
+import threading
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -11,6 +13,11 @@ from tkinter import Tk
 import win32api,win32con
 from threading import *
 
+# 获取 main.py 文件所在的目录
+project_dir = os.path.dirname(os.path.abspath(__file__))
+# 将该目录添加到 Python 模块搜索路径
+sys.path.insert(0, project_dir)
+
 from ChatBot.chat_deepseek import VoiceBot #语音交互模块
 import alarmcode# 警告模块
 import cvcode# 疲劳检测模块
@@ -20,6 +27,8 @@ import gesture_recognition# 石头剪刀布游戏模块
 class DesktopPet(QWidget):
     def __init__(self, parent=None, **kwargs):
         super(DesktopPet, self).__init__(parent)
+        # 创建 VoiceBot 实例
+        self.voice_bot = VoiceBot()
         # 窗体初始化
         self.init()
         # 托盘化初始
@@ -57,6 +66,10 @@ class DesktopPet(QWidget):
         # 设置右键显示最小化的菜单项
         #菜单项切换音乐，点击后调用changemusic_func函数
         changemusic = QAction('切换音乐', self, triggered=self.changemusic_func)
+        # 菜单项开启语音交互,点击后调用start_voice_interaction函数
+        voice_interaction_on=QAction('开启语音交互',self,triggered=self.start_voice_interaction)
+        #菜单项关闭语音交互，点击后调用close_voice_interaction函数
+       # voice_interaction_off=QAction('关闭语音交互',self,triggered=self.close_voice_interaction)
         #菜单项开启提醒，点击后调用remind_func1函数
         remind_on = QAction('开启提醒', self, triggered=self.remind_func1)
         #菜单项关闭提醒，点击后调用remind_func2函数
@@ -76,6 +89,10 @@ class DesktopPet(QWidget):
         self.tray_icon_menu = QMenu(self)
         # 在菜单栏添加一个无子菜单的菜单项‘切换音乐’
         self.tray_icon_menu.addAction(changemusic)
+        # 在菜单栏添加一个无子菜单的菜单项‘开启语音交互’
+        self.tray_icon_menu.addAction(voice_interaction_on)
+        # 在菜单栏添加一个无子菜单的菜单项‘关闭语音交互’
+       # self.tray_icon_menu.addAction(voice_interaction_off)
         # 在菜单栏添加一个无子菜单的菜单项‘开启提醒’
         self.tray_icon_menu.addAction(remind_on)
         # 在菜单栏添加一个无子菜单的菜单项‘关闭提醒’
@@ -538,6 +555,11 @@ class DesktopPet(QWidget):
         else:
             if filename != '':
                 win32api.MessageBox(0, "选中的文件不是.mp3文件，请重新选择", "提示", win32con.MB_OK)
+
+     # 启动语音交互
+    def start_voice_interaction(self):
+        print("启动语音交互")
+        threading.Thread(target=self.voice_bot.start).start()
 
     # 开启提醒
     def remind_func1(self):

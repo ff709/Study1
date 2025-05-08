@@ -11,4 +11,4 @@ def get_yaml_config(file_name):
     return config
 
 config = get_yaml_config('device.yaml')
-#print(config)
+print(config)
